@@ -12,11 +12,20 @@ export type BillingAddressData = {
   phone: string;
 };
 
-export type PaymentDetailsData = {
-  method: string;
+export type CreditCardData = {
   cardNumber: string;
   expiry: string;
   cvv: string;
+  cardHolderName: string;
+};
+
+export type BankTransferData = {
+  bankName: string;
+  accountNumber: string;
+};
+
+export type GiftCardData = {
+  code: string;
 };
 
 export default class CheckoutPage extends BasePage {
@@ -35,6 +44,10 @@ export default class CheckoutPage extends BasePage {
   readonly cardNumberInput;
   readonly expiryInput;
   readonly cvvInput;
+  readonly cardHolderNameInput;
+  readonly bankNameInput;
+  readonly accountNumberInput;
+  readonly giftCardCodeInput;
   readonly confirmButton;
   readonly successMessage;
   readonly errorMessage;
@@ -52,11 +65,15 @@ export default class CheckoutPage extends BasePage {
     this.postcodeInput = this.page.getByLabel(/postcode|postal code|zip/i);
     this.phoneInput = this.page.getByLabel(/phone|telephone|mobile/i);
     this.proceedToPaymentButton = this.page.getByRole('button', { name: /proceed to next step|proceed to payment|next/i });
-    this.paymentMethodSelect = this.page.getByRole('combobox', { name: /payment method/i });
+    this.paymentMethodSelect = this.page.getByRole('combobox', { name: /payment method|payment type/i });
     this.cardNumberInput = this.page.getByLabel(/card number|credit card number/i);
     this.expiryInput = this.page.getByLabel(/expiry|expiration date|exp date/i);
     this.cvvInput = this.page.getByLabel(/cvv|cvc/i);
-    this.confirmButton = this.page.getByRole('button', { name: /confirm|pay|place order/i });
+    this.cardHolderNameInput = this.page.getByLabel(/card holder name|cardholder name|name on card/i);
+    this.bankNameInput = this.page.getByLabel(/bank name|bank/i);
+    this.accountNumberInput = this.page.getByLabel(/account number|iban|bban/i);
+    this.giftCardCodeInput = this.page.getByLabel(/gift card|gift card code|code/i);
+    this.confirmButton = this.page.getByRole('button', { name: /confirm|pay|place order|proceed/i });
     this.successMessage = this.page.getByRole('status').locator('text=/success|thank you|order confirmed/i');
     this.errorMessage = this.page.getByRole('alert').locator('text=/error|failed|invalid/i');
   }
@@ -84,11 +101,26 @@ export default class CheckoutPage extends BasePage {
     await this.proceedToPaymentButton.click();
   }
 
-  async fillPaymentDetails(data: PaymentDetailsData): Promise<void> {
-    await this.paymentMethodSelect.selectOption({ label: data.method });
+  async selectPaymentMethod(
+    method: 'Credit Card' | 'Bank Transfer' | 'Gift Card' | 'Cash on Delivery'
+  ): Promise<void> {
+    await this.paymentMethodSelect.selectOption({ label: method });
+  }
+
+  async fillCreditCardDetails(data: CreditCardData): Promise<void> {
     await this.cardNumberInput.fill(data.cardNumber);
     await this.expiryInput.fill(data.expiry);
     await this.cvvInput.fill(data.cvv);
+    await this.cardHolderNameInput.fill(data.cardHolderName);
+  }
+
+  async fillBankTransferDetails(data: BankTransferData): Promise<void> {
+    await this.bankNameInput.fill(data.bankName);
+    await this.accountNumberInput.fill(data.accountNumber);
+  }
+
+  async fillGiftCardDetails(code: string): Promise<void> {
+    await this.giftCardCodeInput.fill(code);
   }
 
   async confirmOrder(): Promise<void> {
