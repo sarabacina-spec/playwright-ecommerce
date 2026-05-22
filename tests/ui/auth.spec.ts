@@ -83,4 +83,54 @@ test.describe('Authentication Tests', () => {
     expect(await homePage.isLoggedOut()).toBeTruthy();
 
   });
+
+  test('TC005 - Successful user registration', async ({ page }) => {
+    const registerPage = new RegisterPage(page);
+    const loginPage = new LoginPage(page);
+    const homePage = new HomePage(page);
+
+    await registerPage.navigate('/auth/register');
+    await registerPage.waitForPageLoad();
+
+    await registerPage.register(newUser);
+    await page.waitForLoadState('networkidle');
+
+    expect(await homePage.isLoggedOut()).toBeTruthy();
+
+    await loginPage.navigate('/auth/login');
+    await loginPage.waitForPageLoad();
+    await loginPage.login(newUser.email, newUser.password);
+    
+
+    expect(await homePage.getUserName()).toContain('Test');
+  });
+
+  test('TC006 - Registration with already existing email', async ({ page }) => {
+    const registerPage = new RegisterPage(page);
+    const duplicateUser = { ...newUser, email: existingUser.email };
+
+    await registerPage.navigate('/auth/register');
+    await registerPage.waitForPageLoad();
+
+    await registerPage.register(duplicateUser);
+    
+    const errorMessage = await registerPage.getRegisterError();
+    expect(errorMessage).not.toBeNull();
+    expect(errorMessage).toContain('A customer with this email address already exists.');
+  });
+
+  test('TC007 - Registration with invalid email format', async ({ page }) => {
+    const registerPage = new RegisterPage(page);
+    const invalidEmailUser = { ...newUser, email: 'invalidemail' };
+
+    await registerPage.navigate('/auth/register');
+    await registerPage.waitForPageLoad();
+
+    await registerPage.register(invalidEmailUser);
+    await page.waitForLoadState('networkidle');
+
+    const errorMessage = await registerPage.getEmailError();
+    expect(errorMessage).not.toBeNull();
+    expect(errorMessage).toContain('Email format is invalid');
+  });
 });

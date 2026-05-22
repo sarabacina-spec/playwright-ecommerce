@@ -30,7 +30,8 @@ export default class RegisterPage extends BasePage {
   readonly stateInput;
   readonly phoneInput;
   readonly registerButton;
-  readonly errorMessage;
+  readonly registerError;
+  readonly emailError;
 
   constructor(page: Page) {
     super(page);
@@ -42,12 +43,13 @@ export default class RegisterPage extends BasePage {
     this.countrySelect = this.page.getByRole('combobox', { name: /country/i });
     this.postalCodeInput = this.page.getByLabel(/postal code|postcode|zip/i);
     this.houseNumberInput = this.page.getByLabel(/house number|house #|number/i);
-    this.streetInput = this.page.getByLabel(/street|address line 1|address/i);
+    this.streetInput = this.page.locator('[data-test="street"]');
     this.cityInput = this.page.getByLabel(/city/i);
     this.stateInput = this.page.getByLabel(/state|province|region/i);
     this.phoneInput = this.page.getByLabel(/phone|telephone|mobile/i);
     this.registerButton = this.page.getByRole('button', { name: /register|sign up/i });
-    this.errorMessage = this.page.getByRole('alert').locator('text=/error|invalid|failed/i');
+    this.registerError = this.page.locator('[data-test="register-error"]')
+    this.emailError = this.page.locator('[data-test="email-error"]');
   }
 
   async register(userData: RegisterUserData): Promise<void> {
@@ -66,7 +68,12 @@ export default class RegisterPage extends BasePage {
     await this.registerButton.click();
   }
 
-  async getErrorMessage(): Promise<string | null> {
-    return await this.errorMessage.textContent();
-  }
+  async getRegisterError(): Promise<string | null> {
+  return await this.registerError.textContent();
+}
+
+async getEmailError(): Promise<string | null> {
+  return await this.emailError.textContent();
+
+}
 }
