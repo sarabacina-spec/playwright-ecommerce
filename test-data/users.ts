@@ -8,7 +8,7 @@ export const newUser = {
   lastName: 'User',
   email: `test_${Date.now()}@example.com`,
   password: 'Test1234123@#!',
-  dateOfBirth: '01/01/1990',
+  dateOfBirth: '1990-01-01',
   country: 'United States of America (the)',
   postalCode: '12345',
   houseNumber: '10',

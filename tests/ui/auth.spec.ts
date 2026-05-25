@@ -92,15 +92,18 @@ test.describe('Authentication Tests', () => {
     await registerPage.navigate('/auth/register');
     await registerPage.waitForPageLoad();
 
-    await registerPage.register(newUser);
+    const testEmail = `test_${Date.now()}@example.com`;
+    const registerData = { ...newUser, email: testEmail };
+    await registerPage.register(registerData);
     await page.waitForLoadState('networkidle');
 
     expect(await homePage.isLoggedOut()).toBeTruthy();
 
     await loginPage.navigate('/auth/login');
     await loginPage.waitForPageLoad();
-    await loginPage.login(newUser.email, newUser.password);
+    await loginPage.login(testEmail, newUser.password);
     
+await page.waitForSelector('[data-test="nav-menu"]', { state: 'visible' });
 
     expect(await homePage.getUserName()).toContain('Test');
   });
