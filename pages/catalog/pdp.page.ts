@@ -2,25 +2,20 @@ import BasePage from '../base.page';
 import type { Page } from '@playwright/test';
 
 export default class PdpPage extends BasePage {
-  readonly productName;
-  readonly productPrice;
-  readonly productDescription;
-  readonly productImage;
-  readonly addToCartButton;
-  readonly quantityIncreaseButton;
-  readonly quantityDecreaseButton;
-  readonly quantityInput;
+  private readonly productName = this.page.locator('[data-test="product-name"]');
+  private readonly productPrice = this.page.locator('[data-test="unit-price"]');
+  private readonly productDescription = this.page.locator('[data-test="product-description"]');
+  private readonly productImage = this.page.locator('.figure-img');
+  private readonly addToCartButton = this.page.locator('[data-test="add-to-cart"]');
+  private readonly cartQuantity = this.page.locator('[data-test="cart-quantity"]');
 
   constructor(page: Page) {
     super(page);
-    this.productName = this.page.getByRole('heading', { level: 1 });
-    this.productPrice = this.page.getByText(/\$\d+[.,]?\d*/).first();
-    this.productDescription = this.page.getByRole('article').locator('p, .description, [data-testid="product-description"]');
-    this.productImage = this.page.getByRole('img', { name: /product|image|photo/i });
-    this.addToCartButton = this.page.getByRole('button', { name: /add to cart|add to basket|buy now/i });
-    this.quantityIncreaseButton = this.page.getByRole('button', { name: '+' });
-    this.quantityDecreaseButton = this.page.getByRole('button', { name: '-' });
-    this.quantityInput = this.page.getByRole('spinbutton', { name: /quantity|qty/i });
+  }
+
+  async navigate(productId: string): Promise<void> {
+    await this.page.goto(`/product/${productId}`);
+    await this.waitForPageLoad();
   }
 
   async getProductName(): Promise<string | null> {
@@ -31,24 +26,27 @@ export default class PdpPage extends BasePage {
     return await this.productPrice.textContent();
   }
 
+  async getProductDescription(): Promise<string | null> {
+    return await this.productDescription.textContent();
+  }
+
+  async isProductImageVisible(): Promise<boolean> {
+    if (!(await this.productImage.isVisible())) {
+      return false;
+    }
+    return await this.productImage.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0);
+  }
+
   async addToCart(): Promise<void> {
     await this.addToCartButton.click();
   }
 
-  async increaseQuantity(): Promise<void> {
-    await this.quantityIncreaseButton.click();
-  }
-
-  async decreaseQuantity(): Promise<void> {
-    await this.quantityDecreaseButton.click();
-  }
-
-  async setQuantity(qty: number): Promise<void> {
-    await this.quantityInput.fill(qty.toString());
-  }
-
-  async getQuantity(): Promise<number> {
-    const value = await this.quantityInput.inputValue();
-    return Number(value);
+  async getCartQuantity(): Promise<number> {
+    const text = await this.cartQuantity.textContent();
+    if (!text) {
+      return 0;
+    }
+    const quantity = parseInt(text.replace(/[^0-9]/g, ''), 10);
+    return Number.isNaN(quantity) ? 0 : quantity;
   }
 }
